@@ -12,25 +12,34 @@ struct Node *new_node(void *element, struct Node *next)
 	return node;
 }
 
-struct Queue *new_queue(void)
+struct Queue *new_queue(int max_size)
 {
-	return malloc(sizeof(struct Queue));
+	struct Queue *queue = malloc(sizeof(struct Queue));
+	queue->size = 0;
+	queue->max_size = max_size;
+	return queue;
 }
 
 bool queue_empty(struct Queue *queue)
 {
-	return queue->first;
+	return queue->size == 0;
 }
 
-void add_queue(struct Queue *queue, void *element)
+bool add_queue(struct Queue *queue, void *element)
 {
-	struct Node *node = new_node(element, NULL);
-	if (queue_empty(queue)) {
-		queue->first = node;
+	if (queue->size < queue->max_size) {
+		struct Node *node = new_node(element, NULL);
+		if (queue_empty(queue)) {
+			queue->first = node;
+		} else {
+			queue->last->next = node;
+		}
+		queue->last = node;
+		queue->size++;
+		return true;
 	} else {
-		queue->last->next = node;
+		return false;
 	}
-	queue->last = node;
 }
 
 void *pop_queue(struct Queue *queue)
@@ -39,6 +48,7 @@ void *pop_queue(struct Queue *queue)
 	void *element = node->element;
 	queue->first = node->next;
 	free(node);
+	queue->size--;
 	return element;
 }
 

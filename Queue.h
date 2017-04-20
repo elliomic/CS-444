@@ -12,15 +12,17 @@ struct Node {
 struct Queue {
 	struct Node *first;
 	struct Node *last;
+	int size;
+	int max_size;
 };
 
 struct Node *new_node(void *, struct Node *);
 
-struct Queue *new_queue(void);
+struct Queue *new_queue(int);
 
 bool queue_empty(struct Queue *);
 
-void add_queue(struct Queue *, void *);
+bool add_queue(struct Queue *, void *);
 
 void *pop_queue(struct Queue *);
 
