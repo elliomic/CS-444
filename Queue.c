@@ -17,6 +17,7 @@ struct Queue *new_queue(int max_size)
 	struct Queue *queue = malloc(sizeof(struct Queue));
 	queue->size = 0;
 	queue->max_size = max_size;
+	queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 	return queue;
 }
 

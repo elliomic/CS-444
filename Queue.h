@@ -14,6 +14,7 @@ struct Queue {
 	struct Node *last;
 	int size;
 	int max_size;
+	pthread_mutex_t queue_mutex;
 };
 
 struct Node *new_node(void *, struct Node *);
