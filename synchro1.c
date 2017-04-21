@@ -19,7 +19,8 @@ void set_cpuid()
 {
 	__asm__ __volatile__(
 		                 "cpuid;"
-		                 :"=c"(CPUID)
+		                 : "=c"(CPUID)
+		                 : "a"(0x01)
 		                 );
 }
 
