@@ -1,5 +1,5 @@
 /*
-  Simple queue data structure by Michael Elliott
+  Simple locking queue data structure by Michael Elliott
  */
 
 #include "Queue.h"

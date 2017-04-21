@@ -62,9 +62,7 @@ void *producer_thread_routine(void *buffer_ptr)
 			continue;
 		} else {
 			struct buffer_item *item = new_buffer_item();
-			lock_queue(buffer);
 			add_queue(buffer, item);
-			unlock_queue(buffer);
 			sleep(rand_range(3, 7));
 		}
 	}
@@ -81,9 +79,7 @@ void *consumer_thread_routine(void *buffer_ptr)
 			continue;
 		} else {
 			struct buffer_item *item;
-			lock_queue(buffer);
 			item = (struct buffer_item *)pop_queue(buffer);
-			unlock_queue(buffer);
 			printf("%d\n", item->number);
 			sleep(item->work);
 		}

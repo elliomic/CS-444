@@ -1,3 +1,7 @@
+/*
+  Simple locking queue data structure by Michael Elliott
+ */
+
 #ifndef QUEUE_H
 #define QUEUE_H
 
