@@ -39,3 +39,4 @@ void lock_queue(struct Queue *);
 void unlock_queue(struct Queue *);
 
 #endif
+

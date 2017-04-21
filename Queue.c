@@ -35,7 +35,6 @@ bool add_queue(struct Queue *queue, void *element)
 {
 	if (!queue_full(queue)) {
 		struct Node *node = new_node(element, NULL);
-		lock_queue(queue);
 		if (queue_empty(queue)) {
 			queue->first = node;
 		} else {
@@ -43,7 +42,6 @@ bool add_queue(struct Queue *queue, void *element)
 		}
 		queue->last = node;
 		queue->size++;
-		unlock_queue(queue);
 		return true;
 	} else {
 		return false;
@@ -52,13 +50,14 @@ bool add_queue(struct Queue *queue, void *element)
 
 void *pop_queue(struct Queue *queue)
 {
-	struct Node *node = queue->first;
-	void *element = node->element;
-	lock_queue(queue);
-	queue->first = node->next;
-	free(node);
-	queue->size--;
-	unlock_queue(queue);
+	void *element;
+	if (!queue_empty(queue)) {
+		struct Node *node = queue->first;
+		element = node->element;
+		queue->first = node->next;
+		free(node);
+		queue->size--;
+	}
 	return element;
 }
 
@@ -71,3 +70,4 @@ void unlock_queue(struct Queue *queue)
 {
 	pthread_mutex_unlock(&(queue->mutex));
 }
+
