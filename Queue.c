@@ -26,9 +26,14 @@ bool queue_empty(struct Queue *queue)
 	return queue->size == 0;
 }
 
+bool queue_full(struct Queue *queue)
+{
+	return queue->size == queue->max_size;
+}
+
 bool add_queue(struct Queue *queue, void *element)
 {
-	if (queue->size < queue->max_size) {
+	if (!queue_full()) {
 		struct Node *node = new_node(element, NULL);
 		if (queue_empty(queue)) {
 			queue->first = node;

@@ -23,6 +23,8 @@ struct Queue *new_queue(int);
 
 bool queue_empty(struct Queue *);
 
+bool queue_full(struct Queue *);
+
 bool add_queue(struct Queue *, void *);
 
 void *pop_queue(struct Queue *);
