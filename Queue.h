@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 struct Node {
 	void *element;
@@ -14,7 +15,7 @@ struct Queue {
 	struct Node *last;
 	int size;
 	int max_size;
-	pthread_mutex_t queue_mutex;
+	pthread_mutex_t mutex;
 };
 
 struct Node *new_node(void *, struct Node *);
@@ -28,5 +29,9 @@ bool queue_full(struct Queue *);
 bool add_queue(struct Queue *, void *);
 
 void *pop_queue(struct Queue *);
+
+void lock_queue(struct Queue *);
+
+void unlock_queue(struct Queue *);
 
 #endif

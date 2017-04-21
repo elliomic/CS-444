@@ -17,7 +17,7 @@ struct Queue *new_queue(int max_size)
 	struct Queue *queue = malloc(sizeof(struct Queue));
 	queue->size = 0;
 	queue->max_size = max_size;
-	queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_init(&queue->mutex, NULL)
 	return queue;
 }
 
@@ -33,7 +33,7 @@ bool queue_full(struct Queue *queue)
 
 bool add_queue(struct Queue *queue, void *element)
 {
-	if (!queue_full()) {
+	if (!queue_full(queue)) {
 		struct Node *node = new_node(element, NULL);
 		if (queue_empty(queue)) {
 			queue->first = node;
@@ -58,3 +58,12 @@ void *pop_queue(struct Queue *queue)
 	return element;
 }
 
+void lock_queue(struct Queue *queue)
+{
+	pthread_mutex_lock(&(queue->mutex));
+}
+
+void unlock_queue(struct Queue *queue)
+{
+	pthread_mutex_unlock(&(queue->mutex));
+}
