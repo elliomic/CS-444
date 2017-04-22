@@ -1,5 +1,5 @@
 LATEX	= latex -shell-escape
-BIBTEX	= bibte
+BIBTEX	= bibtex
 DVIPS	= dvips
 DVIPDF  = dvipdft
 XDVI	= xdvi -gamma 4
