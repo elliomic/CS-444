@@ -1,0 +1,62 @@
+\begin{thebibliography}{10}
+
+\bibitem{Adamowicz92}
+Zofia Adamowicz.
+\newblock A sharp version of the bounded {Matijasevich} conjecture and the
+  end-extension problem.
+\newblock {\em Journal of Symbolic Logic}, 57(2):597--616, June 1992.
+
+\bibitem{AdlemanMa76}
+Leonard Adleman and Kenneth Manders.
+\newblock Diophantine complexity.
+\newblock In {\em $17^{\it th}$ Annual Symposium on Foundations of Computer
+  Science\/} \cite{FOCS17}, pages 81--88.
+
+\bibitem{AlloucheSh92}
+Jean-Paul Allouche and Jeffrey Shallit.
+\newblock The ring of $k$-regular sequences.
+\newblock {\em Theoretical Computer Science}, 98(2):163--197, May 1992.
+
+\bibitem{Azra71}
+{Jean-Pierre} Azra.
+\newblock Relations {Diophantiennes} et la solution n\'egative du 10e
+  probl\`eme de {Hilbert}.
+\newblock In {\em S\'eminaire Bourbaki---vol. 1970/71. Expos\'es 382--399},
+  volume 244 of {\em Lecture Notes in Mathematics}, pages 11--28.
+  Springer-Verlag, 1971.
+
+\bibitem{Baker68}
+A.~Baker.
+\newblock Contributions to the theory of {Diophantine} equations {I}. {On} the
+  representation of integers by binary forms.
+\newblock {\em Philosophical Transactions of the Royal Society of London.
+  Series A}, 263(1139):173--191, 1968.
+
+\bibitem{BartonFi72a}
+D.~Barton and J.~P. Fitch.
+\newblock Applications of algebraic manipulation programs in physics.
+\newblock {\em Reports on Progress in Physics}, 35(3):235--314, 1972.
+
+\bibitem{CaludeP83}
+Cristian Calude and Gheorghe P{\u{a}}un.
+\newblock Independent instances for some undecidable problems.
+\newblock {\em RAIRO Informatique Th\'eorique}, 17(1):49--54, 1983.
+
+\bibitem{CantoneCP90}
+D.~Cantone, V.~Cutello, and A.~Policrito.
+\newblock Set-theoretic reductions of {Hilbert's} {Tenth} {Problem}.
+\newblock In E.~B{\"o}rger, H.~Kleine B{\"u}ning, and M.~M. Richter, editors,
+  {\em CSL '89: 3rd Workshop on Computer Science Logic}, volume 440 of {\em
+  Lecture Notes in Computer Science}, pages 65--75. Springer-Verlag, 1990.
+
+\bibitem{FOCS17}
+IEEE.
+\newblock {\em $17^{\it th}$ Annual Symposium on Foundations of Computer
+  Science}, Houston, Texas, 25--26 October 1976.
+
+\bibitem{BraunmuhlCV83}
+Burchard von Braunm{\"u}hl, Stephen Cook, Kurt Mehlhorn, and Rutger Verbeek.
+\newblock The recognition of deterministic {CFL}'s in small time and space.
+\newblock {\em Information and Control}, 56(1/2):34--51, January/February 1983.
+
+\end{thebibliography}

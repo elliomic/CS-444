@@ -1,5 +1,5 @@
 SHELL 		= /bin/sh
-CC			= gcc
+CC			= clang
 CCFLAGS		= -pthread\
 			  -ansi -Wall -Wextra
 TARGET		= synchro1
