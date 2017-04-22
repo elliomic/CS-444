@@ -1,7 +1,7 @@
 SHELL 		= /bin/sh
-CC			= clang
+CC		= gcc
 CCFLAGS		= -pthread\
-			  -ansi -Wall -Wextra
+		  -ansi -Wall -Wextra
 TARGET		= synchro1
 HEADERS		= mt19937ar.h Queue.h
 SRCS		= mt19937ar.c Queue.c $(TARGET).c
