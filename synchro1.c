@@ -83,8 +83,8 @@ void *consumer_thread_routine(void *buffer_ptr)
 		lock_queue(buffer);
 		if (!queue_empty(buffer)) {
 			struct buffer_item *item = (struct buffer_item *)pop_queue(buffer);
-			printf("%d\n", item->number);
 			unlock_queue(buffer);
+			printf("%d\n", item->number);
 			sleep(item->work);
 		} else {
 			unlock_queue(buffer);

@@ -49,7 +49,7 @@
 \end{titlingpage}
 
 \section{Kernel Compilation Commands}
-\textdollar{} cd /scratch/spring2017
+\\\textdollar{} cd /scratch/spring2017
 \\\textdollar{} mkdir 13-04
 \\\textdollar{} cd 13-04
 \\\textdollar{} screen -S os
@@ -87,7 +87,9 @@ The purpose of this assignment was mainly to start thinking in parallel \par
 
 \item \textbf{How did you personally approach the problem? Design decisions, algorithm, etc}
 
-Answer goes here \par
+  The first design question was how to organize the items in the buffer in a way in which they could be easily accessed by multiple threads without interference. The solution we came up with was to use a simple locking queue data structure as the buffer. The queue is a singly linked list with O(1) access to the first and last nodes as well as O(1) add and pop operations. Since the intermediate nodes in the queue would never be accessed, we did not have to worry about the O(n) time it would take to reach them. The queue also has a mutex property that can be locked and unlocked. The operations that can be performed on the queue are as follows: an empty check, a full check, add last, pop first, lock, and unlock. This way multiple threads can modify the queue by first locking it, then adding to or popping from the queue, then unlocking it again. When another thread tries to lock a locked queue, it blocks until the queue becomes available. \par
+  The second design question was how to structure the thread routines so they could effectively do work on the buffer. The producer thread routine blocks until the buffer is not full, locks the buffer, adds a new item to the queue, unlocks the buffer, and then sleeps for 3-7 seconds. The consumer thread works quite similarly: it blocks until the buffer is not empty, locks the buffer, pops the first item from the queue, unlocks the buffer, and then performs the work on the item. \par
+  The program allows the user to specify the number of producer and consumer threads as command line arguments. As long as the arguments are positive integers, the program will spawn the specified number of threads of each type. This allows the user to tailor the number of threads to their system for maximum efficiency. \par
 
 \item \textbf{How did you ensure your solution was correct? Testing details, for instance.}
 
