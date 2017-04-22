@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <alloca.h>
 #include "mt19937ar.h"
 #include "Queue.h"
 
@@ -93,14 +94,16 @@ void *consumer_thread_routine(void *buffer_ptr)
 	return 0;
 }
 
-void spawn_threads(int p, int c)
+void spawn_threads(const int p, const int c)
 {
 	struct Queue *buffer;
-	pthread_t producers[p];
-	pthread_t consumers[c];
+	pthread_t *producers;
+	pthread_t *consumers;
 	int i;
 
 	buffer = new_queue(BUFFER_SIZE);
+	producers = alloca(sizeof(pthread_t) * p);
+	consumers = alloca(sizeof(pthread_t) * c);
 
 	for (i = 0; i < p; i++) {
 		pthread_create(&producers[i], 0, producer_thread_routine, buffer);
@@ -118,21 +121,25 @@ void spawn_threads(int p, int c)
 
 int main(int argc, char **argv)
 {
-	int p, c;
-
 	if (argc != 3) {
 		fprintf(stderr,
 		        "USAGE: %s <num_producers> <num_consumers>\n",
 		        argv[0]);
 		return 1;
 	} else {
-		p = atoi(argv[1]);
-		c = atoi(argv[2]);
+		int p = atoi(argv[1]);
+		int c = atoi(argv[2]);
+
+		if (p > 0 && c > 0) {
+			set_cpuid();
+			spawn_threads(p, c);
+		} else {
+			fprintf(stderr,
+			        "error: <num_producers> and <num_consumers>"
+			        " must be > 0\n");
+			return 1;
+		}
 	}
-
-	set_cpuid();
-
-	spawn_threads(p, c);
 
 	return 0;
 }
