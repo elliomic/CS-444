@@ -1,4 +1,4 @@
-/*Michael Elliot, Kirash Teymory, Liv Vitale*/
+/*Michael Elliott, Kirash Teymoury, Liv Vitale*/
 
 #include <stdio.h>
 #include <string.h>

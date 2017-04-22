@@ -1,4 +1,4 @@
-#Michael Elliot, Kirash Teymory, Liv Vitale
+#Michael Elliott, Kirash Teymoury, Liv Vitale
 .PHONY: all clean
 
 all:
