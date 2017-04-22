@@ -1,3 +1,5 @@
+/*Michael Elliot, Kirash Teymory, Liv Vitale*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>

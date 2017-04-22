@@ -1,3 +1,4 @@
+#Michael Elliot, Kirash Teymory, Liv Vitale
 CC		= gcc
 CCFLAGS		= -pthread\
 		  -ansi -Wall -Wextra
