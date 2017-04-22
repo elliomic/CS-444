@@ -46,6 +46,9 @@
 
 \begin{titlingpage}
 \maketitle
+\begin{abstract}
+This document details our experience compiling the linux kernel and booting it via QEMU as well as our work on the concurrency assignment. Additionally, our full commit log and work schedules are included.
+\end{abstract}
 \end{titlingpage}
 
 \section{Kernel Compilation Commands}
@@ -77,7 +80,20 @@ C-a 0
 
 
 \section{QEMU Flags}
-
+\begin{tabular}{l | c}
+Flag & Explanation \\
+\hline
+-gdb [port] & Defines the port to which the GNU debugger should wait for a connection. \\
+-S & Sets the CPU to not start at VM startup. \\
+-nographic & Disables graphical output, effectively making QEMU run as a console application. \\
+-kernel [file] & Sets the linux kernel to boot to. \\
+-drive [options] & Mounts a virtual drive. \\
+-enable-kvm & Enables KVM virtualization support, allowing for virtualizing a kernel. \\
+-net [options] & Creates a virtual network adapter (in our case, none). \\
+-usb & Enables USB support. \\
+-no-reboot & Exits instead of rebooting. \\
+-append [cmdline] & Specifies a command line to use as the kernel command line. \\
+\end{tabular}
 
 \section{Concurrency Assignment}
 \begin{enumerate}
@@ -131,7 +147,7 @@ Date + Time & Item(s) worked on \\
 4/19/17: 6:00pm - 7:00pm & Compiled kernel + QEMU \\
 4/20/17: 4:00pm - 11:00pm & Concurrency assignment 1 \\
 4/21/17: 5:00pm - 6:00pm & Concurrency assignment 1 bugfixes \\
-4/21/17: 6:00pm - 9:00pm & LaTeX writeup \\
+4/21/17: 6:00pm - 11:30pm & LaTeX writeup \\
 \end{tabular}
 
 \nocite{*}
