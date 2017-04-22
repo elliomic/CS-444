@@ -35,7 +35,7 @@
   pdfauthor = {\name},
   pdfkeywords = {cs444 ''operating systems'' files  filesystem I/O},
   pdftitle = {CS 444 Homework 1},
-  pdfsubject = {CS 44 Homework 1},
+  pdfsubject = {CS 444 Homework 1},
   pdfpagemode = UseNone
 }
 
@@ -49,6 +49,30 @@
 \end{titlingpage}
 
 \section{Kernel Compilation Commands}
+$ cd /scratch/spring2017
+$ mkdir 13-04
+$ cd 13-04
+$ screen -S os
+$ git clone git://git.yoctoproject.org/linux-yocto-3.14
+$ cd linux-yocto-3.14
+$ git checkout v3.14.26
+$ cd ..
+$ cp /scratch/opt/environment-setup-i586-poky-linux.csh .
+$ source environment-setup-i586-poky-linux.csh
+$ cd linux-yocto-3.14
+$ cp /scratch/spring2017/files/config-3.14.26-yocto-qemu .config
+$ sed -i 's/^CONFIG_LOCALVERSION=''[^'']*''$/CONFIG_LOCALVERSION=''-13-04-hw1''/' .config
+$ make -j4
+$ cd -
+$ qemu-system-i386 -gdb tcp::5634 -S -nographic -kernel ``linux-yocto-3.14/arch/x86/boot/bzImage'' -drive file=''core-image-lsb-sdk-qemux86.ext3'',if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append ``root=/dev/vda rw console=ttyS0 debug''
+C-a c
+$ echo ``target remote localhost:5634\ncontinue'' > .gdbinit
+$ echo ``add-auto-load-safe-path /scratch/spring2017/13-04/.gdbinit'' >> ~/.gdbinit
+$ $GDB
+C-a 0
+qemux86 login: root
+# uname -a
+# reboot
 
 
 \section{QEMU Flags}
