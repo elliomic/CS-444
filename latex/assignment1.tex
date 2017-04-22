@@ -49,30 +49,31 @@
 \end{titlingpage}
 
 \section{Kernel Compilation Commands}
-$ cd /scratch/spring2017
-$ mkdir 13-04
-$ cd 13-04
-$ screen -S os
-$ git clone git://git.yoctoproject.org/linux-yocto-3.14
-$ cd linux-yocto-3.14
-$ git checkout v3.14.26
-$ cd ..
-$ cp /scratch/opt/environment-setup-i586-poky-linux.csh .
-$ source environment-setup-i586-poky-linux.csh
-$ cd linux-yocto-3.14
-$ cp /scratch/spring2017/files/config-3.14.26-yocto-qemu .config
-$ sed -i 's/^CONFIG_LOCALVERSION=''[^'']*''$/CONFIG_LOCALVERSION=''-13-04-hw1''/' .config
-$ make -j4
-$ cd -
-$ qemu-system-i386 -gdb tcp::5634 -S -nographic -kernel ``linux-yocto-3.14/arch/x86/boot/bzImage'' -drive file=''core-image-lsb-sdk-qemux86.ext3'',if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append ``root=/dev/vda rw console=ttyS0 debug''
+\textdollar{} cd /scratch/spring2017
+\\\textdollar{} mkdir 13-04
+\\\textdollar{} cd 13-04
+\\\textdollar{} screen -S os
+\\\textdollar{} git clone git://git.yoctoproject.org/linux-yocto-3.14
+\\\textdollar{} cd linux-yocto-3.14
+\\\textdollar{} git checkout v3.14.26
+\\\textdollar{} cd ..
+\\\textdollar{} cp /scratch/opt/environment-setup-i586-poky-linux.csh .
+\\\textdollar{} source environment-setup-i586-poky-linux.csh
+\\\textdollar{} cd linux-yocto-3.14
+\\\textdollar{} cp /scratch/spring2017/files/config-3.14.26-yocto-qemu .config
+\\\textdollar{} sed -i 's/\^{}CONFIG\_LOCALVERSION=''[\^{}'']*''\textdollar{}/CONFIG\_LOCALVERSION=''-13-04-hw1''/' .config
+\\\textdollar{} make -j4
+\\\textdollar{} cd -
+\\\textdollar{} qemu-system-i386 -gdb tcp::5634 -S -nographic -kernel ``linux-yocto-3.14/arch/x86/boot/bzImage'' -drive file=''core-image-lsb-sdk-qemux86.ext3'',if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append ``root=/dev/vda rw console=ttyS0 debug''
 C-a c
-$ echo ``target remote localhost:5634\ncontinue'' > .gdbinit
-$ echo ``add-auto-load-safe-path /scratch/spring2017/13-04/.gdbinit'' >> ~/.gdbinit
-$ $GDB
+\\\textdollar{} echo ``target remote localhost:5634\textbackslash{}ncontinue'' \textgreater{} .gdbinit
+\\\textdollar{} echo ``add-auto-load-safe-path /scratch/spring2017/13-04/.gdbinit'' \textgreater{}\textgreater{} \textasciitilde{}/.gdbinit
+\\\textdollar{} \textdollar{}GDB
 C-a 0
-qemux86 login: root
-# uname -a
-# reboot
+\\qemux86 login: root
+\\\# uname -a
+\\\# reboot
+
 
 
 \section{QEMU Flags}
@@ -82,6 +83,26 @@ qemux86 login: root
 
 
 \section{Version Control Log}
+\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
+\href{https://github.com/elliomic/CS-444/commit/495c3654bd7736ea43c6a88eb59743eab5e64695}{495c365} & Michael Elliott & Added Mersenne Twister header\\\hline
+\href{https://github.com/elliomic/CS-444/commit/93039f88419ac754dcbd9f5e86c4acc2ae075c92}{93039f8} & Michael Elliott & Added simple queue data structure\\\hline
+\href{https://github.com/elliomic/CS-444/commit/448f904d4299eed4f7290557a7dd2ed03a731583}{448f904} & Michael Elliott & Added actual header file for Mersenne Twister\\\hline
+\href{https://github.com/elliomic/CS-444/commit/a569e9c76e5f3b7d77a61959641102f75df9826e}{a569e9c} & Michael Elliott & Added size constraints to the queue data structure\\\hline
+\href{https://github.com/elliomic/CS-444/commit/793d488cb52123a48e8d345293ce4359e2c301c1}{793d488} & Michael Elliott & Added mutex property to queue data structure\\\hline
+\href{https://github.com/elliomic/CS-444/commit/acb8c0e69e610e33efc6d0764caa3ccc66a663d9}{acb8c0e} & Michael Elliott & Added function to check if a queue is full\\\hline
+\href{https://github.com/elliomic/CS-444/commit/503f004502547d608cf63b7cd5b60aad8b3ab3f7}{503f004} & Michael Elliott & Added lock and unlock functions for the queue data structure\\\hline
+\href{https://github.com/elliomic/CS-444/commit/66f8c69f4b2b4122718aad4f72a9eeadd9e06545}{66f8c69} & Michael Elliott & Created first concurrency program. Added functions for random numbers and added thread functions\\\hline
+\href{https://github.com/elliomic/CS-444/commit/4ad6d5f2f7a954616d7a38cb8cecd9c26fc3c5f3}{4ad6d5f} & Michael Elliott & Embedded queue lock and unlock into add and pop functions\\\hline
+\href{https://github.com/elliomic/CS-444/commit/9952d2b8061cbde3abc5e0b6fb4430c04aaa28e7}{9952d2b} & Michael Elliott & Removed manual locking and unlocking of queue from thread functions\\\hline
+\href{https://github.com/elliomic/CS-444/commit/fbc9ff6fcc38d42815a70a9a0efff13171a768ac}{fbc9ff6} & Michael Elliott & Added Makefile. Added empty queue checking to the pop function. Fixed rand range. Moved queue locking from internally managed to managed in the thread routines. Added the ability to choose the number of threads spawned through command line arguments.\\\hline
+\href{https://github.com/elliomic/CS-444/commit/4538b939bed2cc80ab0b8940c419877d51f693bc}{4538b93} & Michael Elliott & Fixed cpuid call\\\hline
+\href{https://github.com/elliomic/CS-444/commit/d976f657bc72165f444aac68eeecfdda2d2e1afe}{d976f65} & Michael Elliott & Removed use of variable length arrays. Added error checking for negative input\\\hline
+\href{https://github.com/elliomic/CS-444/commit/615634bdd2be122c6401c6c7ccf23e457ca09c84}{615634b} & Liv Vitale & Added LaTeX document\\\hline
+\href{https://github.com/elliomic/CS-444/commit/3395b2e4d682283838e8cb97063e5517bb5b5d30}{3395b2e} & Liv Vitale & Merge branch 'master' of https://github.com/elliomic/CS-444\\\hline
+\href{https://github.com/elliomic/CS-444/commit/1182169eca1f04759352581b206d7715f24499ca}{1182169} & elliomic & Delete synchro1\\\hline
+\href{https://github.com/elliomic/CS-444/commit/9a46c3c9bab82e9618cddc3e1ddca4f4e3ae0765}{9a46c3c} & elliomic & Return to using gcc\\\hline
+\href{https://github.com/elliomic/CS-444/commit/ca99537566dcc4c0aa6cac3e045d5fefad09dd46}{ca99537} & Liv Vitale & Added title, IEEEtran package\\\hline
+\href{https://github.com/elliomic/CS-444/commit/795c3046ccb4c7bab06b6d779d74d179c68776d6}{795c304} & Liv Vitale & Added sections\\\hline\end{tabular}
 
 
 \section{Work Log}
