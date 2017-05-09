@@ -1,4 +1,4 @@
-\documentclass[letterpaper,10pt,titlepage,draftclsnofoot,onecolumn]{IEEEtran}
+{\bf }\documentclass[letterpaper,10pt,titlepage,draftclsnofoot,onecolumn]{IEEEtran}
 
 \usepackage{graphicx}
 \usepackage{amssymb}
@@ -71,11 +71,11 @@ The main point of this assignment was to get a better understanding of how the I
 
 \item \textbf{How did you personally approach the problem? Design decisions, algorithm, etc}
 
-Answer goes here.
+We decided to make a data structure for all of the data needed to process each philosopher. The struct contains the pthread for that philosopher, a pointer to that philosopher's left and right ``forks'' (mutexes), and the pointer to the global semaphore. The function run by each thread takes the pointer to the philosopher as an argument. It then enters an endless loop in which the thread ``thinks'' (sleeps for 1-20s), decrements the global semaphore, locks the mutexes, ``eats'' (sleeps for 2-9s), unlocks the mutexes, and increments the semaphore. The initial value of the semaphore is equal to the number of philosophers minus 1. This way only n-1 philosophers can attempt to grab forks at any given time, meaning that at least one is guaranteed to grab both forks. This also prevents starvation because as soon as the philosopher holding both forks finishes, the semaphore is incremented and the waiting philosopher can begin the process of picking up his forks and eating.
 
 \item \textbf{How did you ensure your solution was correct? Testing details, for instance.}
 
-Answer goes here.
+We ensured our solution is correct by printing out messages for each event. These messages showed when each philosopher was thinking and eating, and which forks were held by which philosophers. This way we were able to ensure that each philosopher got a turn as well as ensure that multiple philosophers could eat simultaneously.
 
 \item \textbf{What did you learn?}
 
