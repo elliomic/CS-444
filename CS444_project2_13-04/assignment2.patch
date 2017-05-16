@@ -1,0 +1,377 @@
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index 421bef9..abc9385 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -32,6 +32,18 @@ config IOSCHED_CFQ
+ 
+ 	  This is the default I/O scheduler.
+ 
++config IOSCHED_CLOOK
++    tristate "C-LOOK"
++    default y
++    ---help---
++      C-LOOK I/O scheduler
++
++config IOSCHED_SSTF
++    tristate "SSTF"
++    default y
++    ---help---
++      SSTF I/O scheduler
++      
+ config CFQ_GROUP_IOSCHED
+ 	bool "CFQ Group Scheduling support"
+ 	depends on IOSCHED_CFQ && BLK_CGROUP
+@@ -41,7 +53,7 @@ config CFQ_GROUP_IOSCHED
+ 
+ choice
+ 	prompt "Default I/O scheduler"
+-	default DEFAULT_CFQ
++	default DEFAULT_NOOP
+ 	help
+ 	  Select the I/O scheduler which will be used by default for all
+ 	  block devices.
+@@ -55,6 +67,12 @@ choice
+ 	config DEFAULT_NOOP
+ 		bool "No-op"
+ 
++    config DEFAULT_CLOOK
++		bool "C-LOOK" if IOSCHED_CLOOK
++
++    config DEFAULT_SSTF
++		bool "SSTF" if IOSCHED_SSTF
++
+ endchoice
+ 
+ config DEFAULT_IOSCHED
+@@ -62,6 +80,8 @@ config DEFAULT_IOSCHED
+ 	default "deadline" if DEFAULT_DEADLINE
+ 	default "cfq" if DEFAULT_CFQ
+ 	default "noop" if DEFAULT_NOOP
++	default "clook" if DEFAULT_CLOOK
++    default "sstf" if DEFAULT_SSTF
+ 
+ endmenu
+ 
+diff --git a/block/Makefile b/block/Makefile
+index 20645e8..f4c9955 100644
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -16,6 +16,8 @@ obj-$(CONFIG_BLK_DEV_THROTTLING)	+= blk-throttle.o
+ obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
+ obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+ obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
++obj-$(CONFIG_IOSCHED_CLOOK)	+= clook-iosched.o
++obj-$(CONFIG_IOSCHED_SSTF)	+= sstf-iosched.o
+ 
+ obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
+ obj-$(CONFIG_BLK_DEV_INTEGRITY)	+= blk-integrity.o
+diff --git a/block/clook-iosched.c b/block/clook-iosched.c
+new file mode 100644
+index 0000000..d9c34e4
+--- /dev/null
++++ b/block/clook-iosched.c
+@@ -0,0 +1,139 @@
++/*
++ * elevator C-LOOK
++ * Michael Elliott, Kiarash Teymoury, Liv Vitale
++ */
++#include <linux/blkdev.h>
++#include <linux/elevator.h>
++#include <linux/bio.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++
++struct clook_data {
++	struct list_head queue;
++};
++
++static void clook_merged_requests(struct request_queue *q, struct request *rq,
++				 struct request *next)
++{
++	list_del_init(&next->queuelist);
++}
++
++static int clook_dispatch(struct request_queue *q, int force)
++{
++	struct clook_data *cd = q->elevator->elevator_data;
++
++	if (!list_empty(&cd->queue)) {
++		struct request *rq;
++		rq = list_entry(cd->queue.next, struct request, queuelist);
++		list_del_init(&rq->queuelist);
++		elv_dispatch_add_tail(q, rq);
++		return 1;
++	}
++	return 0;
++}
++
++static void clook_add_request(struct request_queue *q, struct request *rq)
++{
++  struct clook_data *cd = q->elevator->elevator_data;
++
++  if (list_empty(&cd->queue)) {
++    list_add_tail(&rq->queuelist, &cd->queue);
++  } else {
++    struct list_head *rq_cur;
++    sector_t rq_sec = blk_rq_pos(rq);
++
++    //rq_cur = list_entry(cd->queue.next, struct request, queuelist);
++    
++    list_for_each(rq_cur, &cd->queue) {
++      struct request *cur = list_entry(rq_cur, struct request, queuelist);
++      if(rq_sec < blk_rq_pos(cur)) {
++        list_add(&rq->queuelist, rq_cur);
++      }
++    }
++  }
++}
++
++static struct request *
++clook_former_request(struct request_queue *q, struct request *rq)
++{
++	struct clook_data *cd = q->elevator->elevator_data;
++
++	if (rq->queuelist.prev == &cd->queue)
++		return NULL;
++	return list_entry(rq->queuelist.prev, struct request, queuelist);
++}
++
++static struct request *
++clook_latter_request(struct request_queue *q, struct request *rq)
++{
++	struct clook_data *cd = q->elevator->elevator_data;
++
++	if (rq->queuelist.next == &cd->queue)
++		return NULL;
++	return list_entry(rq->queuelist.next, struct request, queuelist);
++}
++
++static int clook_init_queue(struct request_queue *q, struct elevator_type *e)
++{
++	struct clook_data *cd;
++	struct elevator_queue *eq;
++
++	eq = elevator_alloc(q, e);
++	if (!eq)
++		return -ENOMEM;
++
++	cd = kmalloc_node(sizeof(*cd), GFP_KERNEL, q->node);
++	if (!cd) {
++		kobject_put(&eq->kobj);
++		return -ENOMEM;
++	}
++	eq->elevator_data = cd;
++
++	INIT_LIST_HEAD(&cd->queue);
++
++	spin_lock_irq(q->queue_lock);
++	q->elevator = eq;
++	spin_unlock_irq(q->queue_lock);
++	return 0;
++}
++
++static void clook_exit_queue(struct elevator_queue *e)
++{
++	struct clook_data *cd = e->elevator_data;
++
++	BUG_ON(!list_empty(&cd->queue));
++	kfree(cd);
++}
++
++static struct elevator_type elevator_clook = {
++	.ops = {
++		.elevator_merge_req_fn		= clook_merged_requests,
++		.elevator_dispatch_fn		= clook_dispatch,
++		.elevator_add_req_fn		= clook_add_request,
++		.elevator_former_req_fn		= clook_former_request,
++		.elevator_latter_req_fn		= clook_latter_request,
++		.elevator_init_fn		= clook_init_queue,
++		.elevator_exit_fn		= clook_exit_queue,
++	},
++	.elevator_name = "C-LOOK",
++	.elevator_owner = THIS_MODULE,
++};
++
++static int __init clook_init(void)
++{
++	return elv_register(&elevator_clook);
++}
++
++static void __exit clook_exit(void)
++{
++	elv_unregister(&elevator_clook);
++}
++
++module_init(clook_init);
++module_exit(clook_exit);
++
++
++MODULE_AUTHOR("Michael Elliott");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("C-LOOK IO scheduler");
+diff --git a/block/sstf-iosched.c b/block/sstf-iosched.c
+new file mode 100644
+index 0000000..9df5efc
+--- /dev/null
++++ b/block/sstf-iosched.c
+@@ -0,0 +1,159 @@
++/*
++ * elevator SSTF
++ */
++#include <linux/blkdev.h>
++#include <linux/elevator.h>
++#include <linux/bio.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++
++struct sstf_data {
++	struct list_head queue;
++	sector_t head_pos;
++};
++
++static void sstf_merged_requests(struct request_queue *q, struct request *rq,
++				 struct request *next)
++{
++	list_del_init(&next->queuelist);
++}
++
++static int sstf_dispatch(struct request_queue *q, int force)
++{
++	struct sstf_data *sd = q->elevator->elevator_data;
++
++	if (!list_empty(&sd->queue)) {
++		struct request *rq;
++		rq = list_entry(sd->queue.next, struct request, queuelist);
++		list_del_init(&rq->queuelist);
++		sd->head_pos = blk_rq_pos(rq) + blk_rq_sectors(rq);
++		elv_dispatch_add_tail(q, rq);
++		return 1;
++	}
++	return 0;
++}
++
++
++static void sstf_add_request(struct request_queue *q, struct request *rq)
++{
++	struct sstf_data *sd = q->elevator->elevator_data;
++
++	if (list_empty(&sd->queue)) {
++		list_add_tail(&rq->queuelist, &sd->queue);
++	} else {
++		struct request *rq_cur;
++		unsigned long rq_dist;
++
++		rq_dist = abs(blk_rq_pos(rq) - sd->head_pos);
++		rq_cur = list_entry(sd->queue.next, struct request, queuelist);
++
++		while (rq_dist < abs(blk_rq_pos(rq_cur) - sd->head_pos)) {
++			rq_cur = list_entry(sd->queue.next, struct request, queuelist);;
++		}
++
++		list_add_tail(&rq->queuelist, &rq_cur->queuelist);
++	}
++}
++
++/*
++ * Returns the request in the queue before the given request.
++ */
++static struct request *
++sstf_former_request(struct request_queue *q, struct request *rq)
++{
++	struct sstf_data *sd = q->elevator->elevator_data;
++
++	if (rq->queuelist.prev == &sd->queue)
++		return NULL;
++	return list_entry(rq->queuelist.prev, struct request, queuelist);
++}
++
++/*
++ * Returns the request in the queue after the given request.
++ */
++static struct request *
++sstf_latter_request(struct request_queue *q, struct request *rq)
++{
++	struct sstf_data *sd = q->elevator->elevator_data;
++
++	if (rq->queuelist.next == &sd->queue)
++		return NULL;
++	return list_entry(rq->queuelist.next, struct request, queuelist);
++}
++
++/*
++ * Initializes the queue.
++ */
++static int sstf_init_queue(struct request_queue *q, struct elevator_type *e)
++{
++	struct sstf_data *sd;
++	struct elevator_queue *eq;
++
++	eq = elevator_alloc(q, e);
++	if (!eq)
++		return -ENOMEM;
++
++	sd = kmalloc_node(sizeof(*sd), GFP_KERNEL, q->node);
++	if (!sd) {
++		kobject_put(&eq->kobj);
++		return -ENOMEM;
++	}
++	eq->elevator_data = sd;
++
++	INIT_LIST_HEAD(&sd->queue);
++
++	spin_lock_irq(q->queue_lock);
++	q->elevator = eq;
++	spin_unlock_irq(q->queue_lock);
++	return 0;
++}
++
++/*
++ * Closes the queue. Panics the kernel if queue is not empty.
++ */
++static void sstf_exit_queue(struct elevator_queue *e)
++{
++	struct sstf_data *sd = e->elevator_data;
++
++	BUG_ON(!list_empty(&sd->queue));
++	kfree(sd);
++}
++
++static struct elevator_type elevator_sstf = {
++	.ops = {
++		.elevator_merge_req_fn		= sstf_merged_requests,
++		.elevator_dispatch_fn		= sstf_dispatch,
++		.elevator_add_req_fn		= sstf_add_request,
++		.elevator_former_req_fn		= sstf_former_request,
++		.elevator_latter_req_fn		= sstf_latter_request,
++		.elevator_init_fn		= sstf_init_queue,
++		.elevator_exit_fn		= sstf_exit_queue,
++	},
++	.elevator_name = "SSTF",
++	.elevator_owner = THIS_MODULE,
++};
++
++/*
++ * Initializes the elevator.
++ */
++static int __init sstf_init(void)
++{
++	return elv_register(&elevator_sstf);
++}
++
++/*
++ * Exits the elevator.
++ */
++static void __exit sstf_exit(void)
++{
++	elv_unregister(&elevator_sstf);
++}
++
++module_init(sstf_init);
++module_exit(sstf_exit);
++
++
++MODULE_AUTHOR("Michael Elliott");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("SSTF IO scheduler");
