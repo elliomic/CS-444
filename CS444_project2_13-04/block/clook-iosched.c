@@ -1,5 +1,6 @@
 /*
  * elevator C-LOOK
+ * Michael Elliott, Kiarash Teymoury, Liv Vitale
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -26,7 +27,7 @@ static int clook_dispatch(struct request_queue *q, int force)
 		struct request *rq;
 		rq = list_entry(cd->queue.next, struct request, queuelist);
 		list_del_init(&rq->queuelist);
-		elv_dispatch_sort(q, rq);
+		elv_dispatch_add_tail(q, rq);
 		return 1;
 	}
 	return 0;
@@ -34,23 +35,23 @@ static int clook_dispatch(struct request_queue *q, int force)
 
 static void clook_add_request(struct request_queue *q, struct request *rq)
 {
-	struct clook_data *cd = q->elevator->elevator_data;
+  struct clook_data *cd = q->elevator->elevator_data;
 
-	if (list_empty(&cd->queue)) {
-		list_add_tail(&rq->queuelist, &cd->queue);
-	} else {
-		struct request *rq_cur;
-		sector_t rq_sec;
+  if (list_empty(&cd->queue)) {
+    list_add_tail(&rq->queuelist, &cd->queue);
+  } else {
+    struct list_head *rq_cur;
+    sector_t rq_sec = blk_rq_pos(rq);
 
-		rq_sec = blk_rq_pos(rq);
-		rq_cur = list_entry(cd->queue.next, struct request, queuelist);
-		
-		while (rq_sec < blk_rq_pos(rq_cur)) {
-			rq_cur = list_entry(cd->queue.next, struct request, queuelist);;
-		}
-
-		list_add_tail(&rq->queuelist, &rq_cur->queuelist);
-	}
+    //rq_cur = list_entry(cd->queue.next, struct request, queuelist);
+    
+    list_for_each(rq_cur, &cd->queue) {
+      struct request *cur = list_entry(rq_cur, struct request, queuelist);
+      if(rq_sec < blk_rq_pos(cur)) {
+        list_add(&rq->queuelist, rq_cur);
+      }
+    }
+  }
 }
 
 static struct request *
