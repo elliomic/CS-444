@@ -28,8 +28,8 @@
 #define PAGE_SECTORS		(1 << PAGE_SECTORS_SHIFT)
 
 /*
- * Each block ramdisk device has a radix_tree brd_pages of pages that stores
- * the pages containing the block device's contents. A brd page's ->index is
+ * Each block ramdisk device has a radix_tree ebrd_pages of pages that stores
+ * the pages containing the block device's contents. An ebrd page's ->index is
  * its offset in PAGE_SIZE units. This is similar to, but in no way connected
  * with, the kernel's pagecache or buffer cache (which sit above our block
  * device).
@@ -429,12 +429,9 @@ static const struct block_device_operations ebrd_fops = {
 /*
  * And now the modules code and kernel interface.
  */
-static int erd_nr;
 int erd_size = CONFIG_BLK_DEV_RAM_SIZE;
 static int max_part;
 static int part_shift;
-module_param(erd_nr, int, S_IRUGO);
-MODULE_PARM_DESC(erd_nr, "Maximum number of ebrd devices");
 module_param(erd_size, int, S_IRUGO);
 MODULE_PARM_DESC(erd_size, "Size of each Encrypted RAM disk in kbytes.");
 module_param(max_part, int, S_IRUGO);
@@ -555,24 +552,8 @@ static struct kobject *ebrd_probe(dev_t dev, int *part, void *data)
 
 static int __init ebrd_init(void)
 {
-	int i, nr;
 	unsigned long range;
 	struct ebrd_device *ebrd, *next;
-
-	/*
-	 * ebrd module now has a feature to instantiate underlying device
-	 * structure on-demand, provided that there is an access dev node.
-	 * However, this will not work well with user space tool that doesn't
-	 * know about such "feature".  In order to not break any existing
-	 * tool, we do the following:
-	 *
-	 * (1) if erd_nr is specified, create that many upfront, and this
-	 *     also becomes a hard limit.
-	 * (2) if erd_nr is not specified, create CONFIG_BLK_DEV_RAM_COUNT
-	 *     (default 16) rd device on module load, user can further
-	 *     extend ebrd device by create dev node themselves and have
-	 *     kernel automatically instantiate actual device on-demand.
-	 */
 
 	part_shift = 0;
 	if (max_part > 0) {
@@ -592,26 +573,15 @@ static int __init ebrd_init(void)
 	if ((1UL << part_shift) > DISK_MAX_PARTS)
 		return -EINVAL;
 
-	if (erd_nr > 1UL << (MINORBITS - part_shift))
-		return -EINVAL;
-
-	if (erd_nr) {
-		nr = erd_nr;
-		range = erd_nr << part_shift;
-	} else {
-		nr = CONFIG_BLK_DEV_RAM_COUNT;
-		range = 1UL << MINORBITS;
-	}
+	range = 1UL << MINORBITS;
 
 	if (register_blkdev(RAMDISK_MAJOR, "ramdisk"))
 		return -EIO;
 
-	for (i = 0; i < nr; i++) {
-		ebrd = ebrd_alloc(i);
-		if (!ebrd)
-			goto out_free;
-		list_add_tail(&ebrd->ebrd_list, &ebrd_devices);
-	}
+	ebrd = ebrd_alloc(0);
+	if (!ebrd)
+		goto out_free;
+	list_add_tail(&ebrd->ebrd_list, &ebrd_devices);
 
 	/* point of no return */
 
@@ -639,7 +609,7 @@ static void __exit ebrd_exit(void)
 	unsigned long range;
 	struct ebrd_device *ebrd, *next;
 
-	range = erd_nr ? erd_nr << part_shift : 1UL << MINORBITS;
+	range = 1UL << MINORBITS;
 
 	list_for_each_entry_safe(ebrd, next, &ebrd_devices, ebrd_list)
 		ebrd_del_one(ebrd);

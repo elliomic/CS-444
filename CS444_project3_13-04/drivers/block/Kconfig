@@ -400,7 +400,7 @@ config BLK_DEV_RAM_COUNT
 
 config BLK_DEV_RAM_SIZE
 	int "Default RAM disk size (kbytes)"
-	depends on BLK_DEV_RAM
+	depends on BLK_DEV_RAM || BLK_DEV_ERAM
 	default "4096"
 	help
 	  The default value is 4096 kilobytes. Only change this if you know
