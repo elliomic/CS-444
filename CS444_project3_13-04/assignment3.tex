@@ -1,0 +1,93 @@
+\documentclass[letterpaper,10pt,titlepage,draftclsnofoot,onecolumn]{IEEEtran}
+
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{titling}
+
+\usepackage{alltt}
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\geometry{textheight=8.5in, textwidth=6in}
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\def\name{Michael Elliott, Kiarash Teymoury, Liv Vitale}
+
+\input{pygments.tex}
+
+\hypersetup{
+  colorlinks = true,
+  urlcolor = black,
+  pdfauthor = {\name},
+  pdfkeywords = {cs444 ''operating systems'' files  filesystem I/O},
+  pdftitle = {CS 444 Homework 2},
+  pdfsubject = {CS 444 Homework 2},
+  pdfpagemode = UseNone
+}
+
+\title{CS 444 Homework 2}
+\author{Michael Elliott, Kiarash Teymoury, Liv Vitale}
+
+\begin{document}
+
+\section{Design Plan}
+
+
+\section{Version Control Log}
+
+\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
+\href{https://github.com/elliomic/CS-444/commit/cc528e366648a00c65aba64a9f1f2ba0f2559acb}{cc528e3} & Commit for concurrency 3\\\hline
+\href{https://github.com/elliomic/CS-444/commit/978270e33710eee398a8e62dc35cba54fb573f49}{978270e} & Added makefiles and stuff for LaTeX\\\hline
+\href{https://github.com/elliomic/CS-444/commit/a71a21724fcc71dec65b67e55cf5452a8fbcd1cc}{a71a217} & Added code for a RAM block device. Still need to add code for encryption\\\hline
+\href{https://github.com/elliomic/CS-444/commit/c977235b57d99b5232287fd15100ed4ce500282a}{c977235} & Now have a working ramdisk useable as a filesystem. Need to do encryption now.\\\hline
+\hline\end{tabular}
+
+
+\section{Work Log}
+\begin{tabular}{l | c | r}
+Date + Time & Item(s) worked on \\
+\hline
+
+\end{tabular}
+
+
+\section{Concurrency Assignment}
+\begin{enumerate}
+\item \textbf{What do you think the main point of this assignment is?}
+
+Answer Goes Here\par
+
+\item \textbf{How did you personally approach the problem? Design decisions, algorithm, etc}
+
+Answer Goes Here\par
+
+\item \textbf{How did you ensure your solution was correct? Testing details, for instance.}
+
+Answer Goes Here\par
+
+\item \textbf{What did you learn?}
+
+Answer Goes Here\par
+
+\end{enumerate}
+
+\nocite{*}
+
+\bibliography{test}
+\bibliographystyle{plain}
+
+\end{document}
