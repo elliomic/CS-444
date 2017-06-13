@@ -285,6 +285,8 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 			clear_slob_page_free(sp);
 		return best_fit;
 	}
+
+	return NULL;
 }
 
 /*
