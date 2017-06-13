@@ -74,7 +74,7 @@
 
 #include <linux/atomic.h>
 
-#include <limits.h>
+#include <linux/limits.h>
 
 #include "slab.h"
 /*
@@ -220,7 +220,7 @@ static void slob_free_pages(void *b, int order)
  */
 static void *slob_page_alloc(struct page *sp, size_t size, int align)
 {
-	slob_t *prev, *cur, *aligned = *best_fit = *best_fit_prev = NULL;
+	slob_t *prev, *cur, *aligned = NULL, *best_fit = NULL, *best_fit_prev = NULL;
 	int delta = 0, units = SLOB_UNITS(size), total, best_size = INT_MAX;
 
 	slobidx_t avail;
