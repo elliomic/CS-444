@@ -670,3 +670,75 @@ void __init kmem_cache_init_late(void)
 {
 	slab_state = FULL;
 }
+
+**
+ * sys_free_slob_space / sys_total_slob_space ~= 0
+	 */
+
+	/* funtionality copied from slob alloc */
+	asmlinkage long sys_total_slob_space(void){
+	long num_pages = 0; /*total pages in all lists */
+	struct list_head *slob_list; /* head temp */
+	struct page *sp;
+	unsigned long flags;
+
+	printk("slob: running sys_total_slob_space\n");
+
+	spin_lock_irqsave(&slob_lock, flags);
+
+	/* small */
+	slob_list = &free_slob_small;
+	list_for_each_entry(sp, slob_list, list) {
+		num_pages++;
+	}
+
+	/* medium */
+	slob_list = &free_slob_medium;
+	list_for_each_entry(sp, slob_list, list) {
+		num_pages++;
+	}
+
+	/* large */
+	slob_list = &free_slob_large;
+	list_for_each_entry(sp, slob_list, list) {
+		num_pages++;
+	}
+
+	spin_unlock_irqrestore(&slob_lock, flags);
+
+	return num_pages * SLOB_UNITS(PAGE_SIZE);
+}
+
+/* funtionality copied from slob alloc */
+	asmlinkage long sys_free_slob_space(void){
+		long free_space = 0; /* total unused space in all pages */
+		struct list_head *slob_list; /* head temp */
+		struct page *sp;
+		unsigned long flags;
+
+		printk("slob: running sys_free_slob_space\n");
+
+		spin_lock_irqsave(&slob_lock, flags);
+
+		/* small */
+		slob_list = &free_slob_small;
+		list_for_each_entry(sp, slob_list, list) {
+			free_space += sp->units;
+		}
+
+		/* medium */
+		slob_list = &free_slob_medium;
+		list_for_each_entry(sp, slob_list, list) {
+			free_space += sp->units;
+		}
+
+		/* large */
+		slob_list = &free_slob_large;
+		list_for_each_entry(sp, slob_list, list) {
+			free_space += sp->units;
+		}
+
+		spin_unlock_irqrestore(&slob_lock, flags);
+
+		return free_space;
+	}
