@@ -290,7 +290,6 @@ static void copy_to_ebrd(struct ebrd_device *ebrd, const void *src,
 	dst = kmap_atomic(page);
 
 	if (key_size != 0) {
-		printk("Encrypting\n");
 		for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
 			crypto_cipher_encrypt_one(cipher, dst + i, src + i);
 		}
@@ -309,7 +308,6 @@ static void copy_to_ebrd(struct ebrd_device *ebrd, const void *src,
 		dst = kmap_atomic(page);
 
 		if (key_size != 0) {
-			printk("Encrypting\n");
 			for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
 				crypto_cipher_encrypt_one(cipher, dst + i, src + i);
 			}
@@ -318,6 +316,17 @@ static void copy_to_ebrd(struct ebrd_device *ebrd, const void *src,
 		
 		kunmap_atomic(dst);
 	}
+
+	printk(KERN_DEBUG "KEY: %s\n", key);
+	printk(KERN_DEBUG "\nPLAINTEXT: ");
+	for (i = 0; i < n; i++) {
+		printk("%u", *(unsigned int *)(src+i));
+	}
+	printk(KERN_DEBUG "ENCRYPTED: ");
+	for (i = 0; i < n; i++) {
+		printk("%u", *(unsigned int *)(dst+i));
+	}
+	printk("\n");
 }
 
 /*
@@ -341,7 +350,6 @@ static void copy_from_ebrd(void *dst, struct ebrd_device *ebrd,
 		src = kmap_atomic(page);
 
 		if (key_size != 0) {
-			printk("decrypting\n");
 			for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
 				crypto_cipher_decrypt_one(cipher,dst + i,src + i);
 			}
@@ -361,7 +369,6 @@ static void copy_from_ebrd(void *dst, struct ebrd_device *ebrd,
 			src = kmap_atomic(page);
 
 			if (key_size != 0) {
-				printk("decrypting\n");
 				for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
 					crypto_cipher_decrypt_one(cipher,dst + i,src + i);
 				}
@@ -372,6 +379,17 @@ static void copy_from_ebrd(void *dst, struct ebrd_device *ebrd,
 		} else
 			memset(dst, 0, copy);
 	}
+
+	printk(KERN_DEBUG "KEY: %s\n", key);
+	printk(KERN_DEBUG "ENCRYPTED: ");
+	for (i = 0; i < n; i++) {
+		printk("%u", *(unsigned int *)(dst+i));
+	}
+	printk(KERN_DEBUG "\nPLAINTEXT: ");
+	for (i = 0; i < n; i++) {
+		/* printk("%u", *(unsigned int *)(src+i)); */
+	}
+	printk("\n");
 }
 
 /*
