@@ -27,7 +27,7 @@
 #define PAGE_SECTORS_SHIFT	(PAGE_SHIFT - SECTOR_SHIFT)
 #define PAGE_SECTORS		(1 << PAGE_SECTORS_SHIFT)
 
-static char *key;
+static char *key = CONFIG_BLK_DEV_ERAM_KEY;
 module_param(key, charp, S_IRUGO);
 
 #define KEY_SIZE 32
@@ -260,6 +260,14 @@ static void discard_from_ebrd(struct ebrd_device *ebrd,
 	}
 }
 
+void key_setup(void);
+void key_setup()
+{
+		crypto_cipher_clear_flags(cipher, ~0);
+		crypto_cipher_setkey(cipher, key, strlen(key));
+		key_size = strlen(key);
+}
+
 /*
  * Copy n bytes from src to the ebrd starting at sector. Does not sleep.
  */
@@ -272,17 +280,8 @@ static void copy_to_ebrd(struct ebrd_device *ebrd, const void *src,
 	size_t copy;
 
 	int i;
-	
-	if (key_size == 0) {
-		crypto_cipher_clear_flags(cipher, ~0);
-		crypto_cipher_setkey(cipher, key, strlen(key));
-		key_size = strlen(key);
-		printk("Key size %d\n", key_size);
-	} else {
-		crypto_cipher_clear_flags(cipher, ~0);
-		crypto_cipher_setkey(cipher, crypto_key, key_size);
-		key_size = strlen(key);
-	}
+
+	key_setup();
 
 	copy = min_t(size_t, n, PAGE_SIZE - offset);
 	page = ebrd_lookup_page(ebrd, sector);
@@ -334,6 +333,8 @@ static void copy_from_ebrd(void *dst, struct ebrd_device *ebrd,
 
 	int i;
 	
+	key_setup();
+
 	copy = min_t(size_t, n, PAGE_SIZE - offset);
 	page = ebrd_lookup_page(ebrd, sector);
 	if (page) {
@@ -634,6 +635,9 @@ static int __init ebrd_init(void)
 	unsigned long range;
 	struct ebrd_device *ebrd, *next;
 
+	cipher = crypto_alloc_cipher("aes", 0, 0);
+	key_size = strlen(crypto_key);
+
 	part_shift = 0;
 	if (max_part > 0) {
 		part_shift = fls(max_part);
@@ -688,6 +692,8 @@ static void __exit ebrd_exit(void)
 	unsigned long range;
 	struct ebrd_device *ebrd, *next;
 
+	crypto_free_cipher(cipher);
+	
 	range = 1UL << MINORBITS;
 
 	list_for_each_entry_safe(ebrd, next, &ebrd_devices, ebrd_list)
