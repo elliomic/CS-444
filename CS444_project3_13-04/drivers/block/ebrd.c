@@ -27,6 +27,38 @@
 #define PAGE_SECTORS_SHIFT	(PAGE_SHIFT - SECTOR_SHIFT)
 #define PAGE_SECTORS		(1 << PAGE_SECTORS_SHIFT)
 
+static char *key;
+module_param(key, charp, S_IRUGO);
+
+#define KEY_SIZE 32
+static char crypto_key[KEY_SIZE];
+static int key_size = 0;
+
+
+struct crypto_cipher *cipher;
+
+ssize_t key_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	printk(KERN_DEBUG "crypt: Copying key\n");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", crypto_key);
+}
+
+ssize_t key_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	if (count != 16 && count != 24 && count != 32)
+	{
+		printk(KERN_WARNING "Crpyt: invalid key size %d\n", count);
+		return -EINVAL;
+	}
+
+	printk(KERN_DEBUG "crpyt: storing key\n");
+	snprintf(crypto_key, sizeof(crypto_key), "%.*s", (int)min(count, sizeof(crypto_key) - 1), buf);
+	key_size = count;
+	return count;
+}
+
+DEVICE_ATTR(key, 0600, key_show, key_store);
+
 /*
  * Each block ramdisk device has a radix_tree ebrd_pages of pages that stores
  * the pages containing the block device's contents. An ebrd page's ->index is
@@ -239,12 +271,33 @@ static void copy_to_ebrd(struct ebrd_device *ebrd, const void *src,
 	unsigned int offset = (sector & (PAGE_SECTORS-1)) << SECTOR_SHIFT;
 	size_t copy;
 
+	int i;
+	
+	if (key_size == 0) {
+		crypto_cipher_clear_flags(cipher, ~0);
+		crypto_cipher_setkey(cipher, key, strlen(key));
+		key_size = strlen(key);
+		printk("Key size %d\n", key_size);
+	} else {
+		crypto_cipher_clear_flags(cipher, ~0);
+		crypto_cipher_setkey(cipher, crypto_key, key_size);
+		key_size = strlen(key);
+	}
+
 	copy = min_t(size_t, n, PAGE_SIZE - offset);
 	page = ebrd_lookup_page(ebrd, sector);
 	BUG_ON(!page);
 
 	dst = kmap_atomic(page);
-	memcpy(dst + offset, src, copy);
+
+	if (key_size != 0) {
+		printk("Encrypting\n");
+		for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
+			crypto_cipher_encrypt_one(cipher, dst + i, src + i);
+		}
+	} else
+		memcpy(dst + offset, src, copy);
+	
 	kunmap_atomic(dst);
 
 	if (copy < n) {
@@ -255,7 +308,15 @@ static void copy_to_ebrd(struct ebrd_device *ebrd, const void *src,
 		BUG_ON(!page);
 
 		dst = kmap_atomic(page);
-		memcpy(dst, src, copy);
+
+		if (key_size != 0) {
+			printk("Encrypting\n");
+			for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
+				crypto_cipher_encrypt_one(cipher, dst + i, src + i);
+			}
+		} else
+			memcpy(dst, src, copy);
+		
 		kunmap_atomic(dst);
 	}
 }
@@ -271,11 +332,21 @@ static void copy_from_ebrd(void *dst, struct ebrd_device *ebrd,
 	unsigned int offset = (sector & (PAGE_SECTORS-1)) << SECTOR_SHIFT;
 	size_t copy;
 
+	int i;
+	
 	copy = min_t(size_t, n, PAGE_SIZE - offset);
 	page = ebrd_lookup_page(ebrd, sector);
 	if (page) {
 		src = kmap_atomic(page);
-		memcpy(dst, src + offset, copy);
+
+		if (key_size != 0) {
+			printk("decrypting\n");
+			for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
+				crypto_cipher_decrypt_one(cipher,dst + i,src + i);
+			}
+		} else
+			memcpy(dst, src + offset, copy);
+		
 		kunmap_atomic(src);
 	} else
 		memset(dst, 0, copy);
@@ -287,7 +358,15 @@ static void copy_from_ebrd(void *dst, struct ebrd_device *ebrd,
 		page = ebrd_lookup_page(ebrd, sector);
 		if (page) {
 			src = kmap_atomic(page);
-			memcpy(dst, src, copy);
+
+			if (key_size != 0) {
+				printk("decrypting\n");
+				for (i = 0; i < n; i += crypto_cipher_blocksize(cipher)) {
+					crypto_cipher_decrypt_one(cipher,dst + i,src + i);
+				}
+			} else
+				memcpy(dst, src, copy);
+			
 			kunmap_atomic(src);
 		} else
 			memset(dst, 0, copy);
